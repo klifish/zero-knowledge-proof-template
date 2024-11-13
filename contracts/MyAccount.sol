@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
 import "@account-abstraction/contracts/core/Helpers.sol";
 import "./Commitment.sol";
+import "hardhat/console.sol";
 
 
 
@@ -12,11 +13,13 @@ contract MyAccount is BaseAccount, Initializable {
     uint256 public immutable countId;
 
     IEntryPoint private immutable _entryPoint;
+    IVerifier private immutable _verifier;
 
     event MyAccountInitialized(IEntryPoint indexed entryPoint, uint256 indexed commitmentModule);
 
-    constructor(IEntryPoint anEntryPoint) {
+    constructor(IEntryPoint anEntryPoint, IVerifier aVerifier) {
         _entryPoint = anEntryPoint;
+        _verifier = aVerifier;
         _disableInitializers();
     }
 
@@ -43,15 +46,11 @@ contract MyAccount is BaseAccount, Initializable {
         return SIG_VALIDATION_FAILED;
     }
 
-    function initialize(IVerifier _verifier, uint256 _commitment) public virtual initializer {
-        _initialize(_verifier, _commitment);   
+    function initialize(uint256 aCommitment) public virtual initializer {
+        _initialize(aCommitment);   
     }
 
-    // constructor(IVerifier _verifier, uint256 _commitment) {
-    //     commitmentModule = new Commitment(_verifier, _commitment);
-    // }
-
-    function _initialize(IVerifier _verifier, uint256 _commitment) internal virtual {
+    function _initialize(uint256 _commitment) internal virtual {
         commitmentModule = new Commitment(_verifier, _commitment);
         emit MyAccountInitialized(_entryPoint, _commitment);
     }
